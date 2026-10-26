@@ -8,6 +8,14 @@
 
 **Entrada**: Descripción de la persona usuaria: «Quiero una aplicación para estudiantes de la UPB que les ayude a organizar sus tareas académicas. El estudiante puede registrar sus materias (nombre y color). Puede crear tareas asociadas a una materia, con título, descripción opcional y fecha de entrega. Ve un listado de tareas ordenado por fecha de entrega, donde las tareas vencidas se destacan y las próximas 48 horas aparecen como "urgentes". Puede marcar tareas como completadas y filtrarlas por materia o por estado. En esta primera versión no hay inicio de sesión: es un solo usuario por dispositivo. Todo el contenido de la especificación debe estar en español.»
 
+## Aclaraciones
+
+### Sesión 2026-10-26
+
+- P: ¿Qué debe ocurrir con las tareas asociadas cuando el estudiante intenta borrar una materia? → A: Impedir borrar la materia mientras tenga tareas asociadas.
+- P: ¿Cuál debe ser la longitud máxima del nombre de una materia, del título de una tarea y de su descripción? → A: Nombre de materia: 100 caracteres; título de tarea: 150 caracteres; descripción: 2.000 caracteres.
+- P: ¿Cómo debe calcularse si una tarea está “urgente”? → A: Es urgente si su fecha y hora límite es posterior al momento actual y ocurre dentro de las siguientes 48 horas, incluyendo exactamente el límite de 48 horas.
+
 ## Escenarios de usuario y pruebas
 
 ### Historia de usuario 1: Organizar materias y registrar tareas (Prioridad: P1)
@@ -107,6 +115,9 @@ de materia y estado; comprobar que cada resultado corresponde al filtro elegido.
    una materia o tarea y consulta el listado, **entonces** puede operar los
    controles y distinguir la información en ambos tipos de pantalla sin depender
    únicamente del color.
+9. **Dado** que una materia tiene tareas asociadas, **cuando** el estudiante
+   intenta borrarla, **entonces** el sistema impide el borrado y explica que
+   primero debe resolver o reasignar sus tareas.
 
 ### Casos límite
 
@@ -119,6 +130,8 @@ de materia y estado; comprobar que cada resultado corresponde al filtro elegido.
   conservan un orden estable entre consultas.
 - Una tarea que vence exactamente dentro de 48 horas se considera urgente; una
   tarea que vence en un instante posterior no se considera urgente todavía.
+- Una tarea cuya fecha y hora límite coincide exactamente con el momento actual
+  ya no se considera urgente; si permanece pendiente, se considera vencida.
 - Al cambiar el día o la hora, las etiquetas de vencida y urgente se actualizan
   sin que el estudiante tenga que modificar la tarea.
 - Si un filtro no coincide con ninguna tarea, se muestra un estado vacío
@@ -126,6 +139,13 @@ de materia y estado; comprobar que cada resultado corresponde al filtro elegido.
 - Los nombres y descripciones con espacios al inicio o al final se procesan sin
   espacios sobrantes; si después de normalizar un campo obligatorio queda vacío,
   se solicita corregirlo.
+- El nombre de una materia no puede superar 100 caracteres, el título de una
+  tarea no puede superar 150 caracteres y la descripción no puede superar 2.000
+  caracteres; se cuenta el texto después de quitar espacios sobrantes al inicio
+  y al final.
+- Una materia que tenga tareas asociadas no se puede borrar; el estudiante recibe
+  una explicación para que resuelva o reasigne esas tareas antes de intentarlo
+  nuevamente.
 
 ## Requisitos
 
@@ -134,19 +154,21 @@ de materia y estado; comprobar que cada resultado corresponde al filtro elegido.
 - **RF-001**: El sistema DEBE permitir registrar una materia con nombre y color.
 - **RF-002**: El sistema DEBE validar que el nombre de la materia y su color
   estén presentes; el nombre no puede quedar vacío después de quitar espacios
-  sobrantes.
+  sobrantes ni exceder 100 caracteres.
 - **RF-003**: El sistema DEBE permitir crear una tarea asociada a una materia
   registrada, con título y fecha de entrega, y una descripción opcional.
 - **RF-004**: El sistema DEBE validar que el título no quede vacío después de
   quitar espacios sobrantes y que exista una materia asociada y una fecha de
-  entrega válida.
+  entrega válida; el título no puede exceder 150 caracteres y la descripción
+  opcional no puede exceder 2.000 caracteres.
 - **RF-005**: El sistema DEBE mostrar las tareas ordenadas de la fecha de
   entrega más próxima a la más lejana.
 - **RF-006**: El sistema DEBE destacar como vencida cada tarea pendiente cuya
-  fecha y hora límite ya haya pasado.
+  fecha y hora límite haya llegado o pasado.
 - **RF-007**: El sistema DEBE marcar como urgente cada tarea pendiente cuya fecha
-  y hora límite esté entre el momento actual y las siguientes 48 horas,
-  incluyendo exactamente el límite de 48 horas.
+  y hora límite sea posterior al momento actual y ocurra dentro de las siguientes
+  48 horas, incluyendo exactamente el límite de 48 horas; el cálculo usa horas
+  transcurridas, no días calendario.
 - **RF-008**: El sistema DEBE dejar de destacar como vencida una tarea cuando se
   marque como completada.
 - **RF-009**: El sistema DEBE permitir marcar una tarea pendiente como completada.
@@ -168,6 +190,9 @@ de materia y estado; comprobar que cada resultado corresponde al filtro elegido.
 - **RF-017**: El registro de materias y tareas, los filtros y el listado DEBEN
   poder utilizarse en celular y computadora; la información y las acciones
   esenciales DEBEN seguir siendo perceptibles y operables en ambos.
+- **RF-018**: El sistema DEBE impedir borrar una materia mientras tenga tareas
+  asociadas y DEBE explicar que primero es necesario resolver o reasignar esas
+  tareas.
 
 ### Entidades principales
 
@@ -204,9 +229,10 @@ de materia y estado; comprobar que cada resultado corresponde al filtro elegido.
 - La fecha de entrega se captura como una fecha y hora local del dispositivo.
   Si se proporciona solo una fecha, la hora límite es el final de ese día en la
   hora local del dispositivo.
-- Una tarea está vencida cuando ha pasado su fecha y hora límite y aún está
-  pendiente. Es urgente si está pendiente y vence dentro de las próximas 48
-  horas, incluyendo el límite exacto.
+- Una tarea está vencida cuando ha llegado o pasado su fecha y hora límite y aún está
+  pendiente. Es urgente si está pendiente, su fecha y hora límite es posterior
+  al momento actual y ocurre dentro de las próximas 48 horas transcurridas,
+  incluyendo el límite exacto de 48 horas.
 - La primera versión contempla un único usuario por dispositivo; los datos no
   se comparten ni sincronizan con otros dispositivos.
 - No se requiere integrar la aplicación con sistemas académicos externos de la
