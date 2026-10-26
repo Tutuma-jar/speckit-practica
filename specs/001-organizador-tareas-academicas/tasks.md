@@ -132,7 +132,7 @@ sin alterar las reglas de vencimiento de la historia P2.
 documentación de ejecución en el stack acordado.
 
 - [ ] T032 [P] Escribir en `tests/test_ui.py` pruebas Playwright de creación de materia y tarea, validación visible, filtros, completar tarea, conflicto al borrar materia y contenido seguro en vistas de 390 × 844 y 1366 × 768.
-- [ ] T033 Añadir en `tests/test_ui.py` pruebas de accesibilidad de requisitos: etiquetas accesibles en controles principales, navegación por teclado y nombres o textos que identifiquen materias sin depender solo del color.
+- [X] T033 Añadir en `tests/test_ui.py` pruebas de accesibilidad de requisitos: etiquetas accesibles en controles principales, navegación por teclado y nombres o textos que identifiquen materias sin depender solo del color.
 - [ ] T034 Actualizar `specs/001-organizador-tareas-academicas/quickstart.md` con la instalación de dependencias de desarrollo, instalación de Chromium para Playwright, ejecución de pytest y arranque local en `127.0.0.1`.
 - [ ] T035 Ejecutar `python -m pytest` y corregir cualquier fallo en `tests/test_api.py`, `tests/test_deadlines.py`, `tests/test_ui.py`, `app/main.py`, `app/db.py`, `app/schemas.py`, `app/deadlines.py`, `app/static/index.html`, `app/static/styles.css` o `app/static/app.js` antes de declarar la funcionalidad terminada.
 - [ ] T036 Ejecutar los escenarios de `specs/001-organizador-tareas-academicas/quickstart.md` y ajustar ese documento si algún comando o resultado esperado no coincide con el diseño final.
