@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f6fb">
+    <title>Organizador académico UPB</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="page-shell">
+        <p class="eyebrow">Universidad Pontificia Bolivariana</p>
+        <h1>Organizador académico</h1>
+        <p class="intro">Reúne tus materias y tareas en un solo lugar.</p>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="forms-grid" aria-label="Registro académico">
+        <article class="panel">
+          <h2>Registrar materia</h2>
+          <form id="subject-form" novalidate>
+            <label for="subject-name">Nombre de la materia</label>
+            <input id="subject-name" name="nombre" type="text"
+              maxlength="100" autocomplete="off" required>
+
+            <label for="subject-color">Color de la materia</label>
+            <input id="subject-color" name="color" type="color"
+              value="#3366cc" required>
+
+            <button type="submit">Guardar materia</button>
+            <p id="subject-message" class="form-message" role="status"
+              aria-live="polite"></p>
+          </form>
+        </article>
+
+        <article class="panel">
+          <h2>Registrar tarea</h2>
+          <form id="task-form" novalidate>
+            <label for="task-subject">Materia</label>
+            <select id="task-subject" name="materia_id" required>
+              <option value="">Selecciona una materia</option>
+            </select>
+
+            <label for="task-title">Título</label>
+            <input id="task-title" name="titulo" type="text"
+              maxlength="150" autocomplete="off" required>
+
+            <label for="task-description">Descripción <span>(opcional)</span></label>
+            <textarea id="task-description" name="descripcion"
+              maxlength="2000" rows="3"></textarea>
+
+            <label for="task-date">Fecha de entrega</label>
+            <input id="task-date" name="fecha" type="date" required>
+
+            <label for="task-time">Hora de entrega <span>(opcional)</span></label>
+            <input id="task-time" name="hora" type="time">
+
+            <button id="task-submit" type="submit" disabled>Guardar tarea</button>
+            <p id="task-message" class="form-message" role="status"
+              aria-live="polite"></p>
+          </form>
+        </article>
+      </section>
+
+      <section class="panel task-section" aria-labelledby="tasks-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Tu espacio de trabajo</p>
+            <h2 id="tasks-heading">Materias y tareas</h2>
+          </div>
+        </div>
+        <p id="list-message" class="empty-state" role="status"
+          aria-live="polite">Cargando tus materias y tareas…</p>
+        <div id="subject-list" class="subject-list"></div>
+        <div id="task-list" class="task-list"></div>
+      </section>
+    </main>
+
+    <footer class="page-shell page-footer">
+      <p>Tus datos se guardan en este dispositivo.</p>
+    </footer>
+  </body>
+</html>

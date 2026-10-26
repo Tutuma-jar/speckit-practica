@@ -15,9 +15,9 @@ demostrables y comprobables.
 
 **Propósito**: Inicializar el único proyecto Python y sus dependencias.
 
-- [ ] T001 Crear `pyproject.toml` para Python 3.12 con configuración editable de setuptools, dependencias de ejecución `fastapi`, `uvicorn` y `tzdata`, dependencias de desarrollo `pytest`, `httpx` y `pytest-playwright`, y configuración de pytest.
-- [ ] T002 [P] Crear el paquete de aplicación en `app/__init__.py` y el directorio de recursos estáticos mediante `app/static/.gitkeep`.
-- [ ] T003 [P] Crear el paquete de pruebas en `tests/__init__.py`.
+- [X] T001 Crear `pyproject.toml` para Python 3.12 con configuración editable de setuptools, dependencias de ejecución `fastapi`, `uvicorn` y `tzdata`, dependencias de desarrollo `pytest`, `httpx` y `pytest-playwright`, y configuración de pytest.
+- [X] T002 [P] Crear el paquete de aplicación en `app/__init__.py` y el directorio de recursos estáticos mediante `app/static/.gitkeep`.
+- [X] T003 [P] Crear el paquete de pruebas en `tests/__init__.py`.
 
 ---
 
@@ -28,10 +28,10 @@ recursos de prueba necesarios antes de las historias.
 
 **Bloqueo**: Las historias no empiezan hasta completar esta fase.
 
-- [ ] T004 Implementar en `app/db.py` la ruta de base configurable mediante `UPB_TASKS_DB_PATH`, su valor predeterminado en la carpeta local de datos del usuario, conexiones breves y activación de claves foráneas en cada conexión.
-- [ ] T005 Inicializar en `app/db.py` las tablas `materias` y `tareas` con los campos, relaciones, nulabilidad y restricciones descritos en `data-model.md`; definir `tareas.materia_id` con borrado restringido y consultas SQLite parametrizadas.
-- [ ] T006 [P] Crear en `app/main.py` la fábrica FastAPI, configurar la ruta `/` para servir `app/static/index.html`, montar `app/static/` bajo `/static` y establecer el punto de inyección de la ruta de base de datos para pruebas.
-- [ ] T007 Crear en `tests/conftest.py` fixtures pytest que usen `TestClient` y una base SQLite temporal independiente por prueba, inicializando la aplicación mediante `app/main.py`.
+- [X] T004 Implementar en `app/db.py` la ruta de base configurable mediante `UPB_TASKS_DB_PATH`, su valor predeterminado en la carpeta local de datos del usuario, conexiones breves y activación de claves foráneas en cada conexión.
+- [X] T005 Inicializar en `app/db.py` las tablas `materias` y `tareas` con los campos, relaciones, nulabilidad y restricciones descritos en `data-model.md`; definir `tareas.materia_id` con borrado restringido y consultas SQLite parametrizadas.
+- [X] T006 [P] Crear en `app/main.py` la fábrica FastAPI, configurar la ruta `/` para servir `app/static/index.html`, montar `app/static/` bajo `/static` y establecer el punto de inyección de la ruta de base de datos para pruebas.
+- [X] T007 Crear en `tests/conftest.py` fixtures pytest que usen `TestClient` y una base SQLite temporal independiente por prueba, inicializando la aplicación mediante `app/main.py`.
 
 **Punto de control**: la aplicación arranca con la base aislable en pruebas y
 queda configurada para servir los recursos estáticos cuando la historia P1 cree
@@ -51,17 +51,17 @@ siguen disponibles. Verificar también campos ausentes, vacíos y fuera de lími
 
 ### Pruebas de la historia 1
 
-- [ ] T008 [US1] Escribir en `tests/test_api.py` pruebas de contrato para `GET /api/materias`, `POST /api/materias`, `GET /api/tareas` y `POST /api/tareas`, incluyendo respuestas exitosas, persistencia, materia inexistente y errores `404` y `422`.
-- [ ] T009 [US1] Escribir en `tests/test_api.py` pruebas de validación para nombre de materia entre 1 y 100 caracteres, título entre 1 y 150 caracteres, descripción opcional de hasta 2.000 caracteres, espacios externos, color `#RRGGBB` y materias con igual nombre pero distinto identificador.
+- [X] T008 [US1] Escribir en `tests/test_api.py` pruebas de contrato para `GET /api/materias`, `POST /api/materias`, `GET /api/tareas` y `POST /api/tareas`, incluyendo respuestas exitosas, persistencia, materia inexistente y errores `404` y `422`.
+- [X] T009 [US1] Escribir en `tests/test_api.py` pruebas de validación para nombre de materia entre 1 y 100 caracteres, título entre 1 y 150 caracteres, descripción opcional de hasta 2.000 caracteres, espacios externos, color `#RRGGBB` y materias con igual nombre pero distinto identificador.
 
 ### Implementación de la historia 1
 
-- [ ] T010 [US1] Crear en `app/schemas.py` modelos de entrada y salida de Materia y Tarea; respetar literalmente «nombre obligatorio de 1 a 100 caracteres», «color `#RRGGBB`», «título obligatorio de 1 a 150 caracteres» y «descripción opcional de hasta 2.000 caracteres» después de recortar espacios externos.
-- [ ] T011 [US1] Implementar en `app/db.py` operaciones parametrizadas para crear y listar materias, crear tareas asociadas y listar tareas con los campos de `data-model.md`.
-- [ ] T012 [US1] Implementar en `app/main.py` `GET /api/materias`, `POST /api/materias`, `GET /api/tareas` y `POST /api/tareas`, con validación, códigos `200`, `201`, `404`, `422` y mensajes de error en español.
-- [ ] T013 [P] [US1] Crear en `app/static/index.html` formularios etiquetados para registrar materia con nombre y color, y tarea con título, descripción opcional, materia y fecha de entrega.
-- [ ] T014 [P] [US1] Crear en `app/static/styles.css` estilos base responsivos para los formularios de materias y tareas, con controles legibles, foco visible y diseño utilizable en celular y computadora.
-- [ ] T015 [US1] Implementar en `app/static/app.js` el envío de los formularios a la API, la carga de materias y tareas iniciales, mensajes de validación en español y creación segura de contenido con APIs DOM que no interpreten texto de usuario como HTML.
+- [X] T010 [US1] Crear en `app/schemas.py` modelos de entrada y salida de Materia y Tarea; respetar literalmente «nombre obligatorio de 1 a 100 caracteres», «color `#RRGGBB`», «título obligatorio de 1 a 150 caracteres» y «descripción opcional de hasta 2.000 caracteres» después de recortar espacios externos.
+- [X] T011 [US1] Implementar en `app/db.py` operaciones parametrizadas para crear y listar materias, crear tareas asociadas y listar tareas con los campos de `data-model.md`.
+- [X] T012 [US1] Implementar en `app/main.py` `GET /api/materias`, `POST /api/materias`, `GET /api/tareas` y `POST /api/tareas`, con validación, códigos `200`, `201`, `404`, `422` y mensajes de error en español.
+- [X] T013 [P] [US1] Crear en `app/static/index.html` formularios etiquetados para registrar materia con nombre y color, y tarea con título, descripción opcional, materia y fecha de entrega.
+- [X] T014 [P] [US1] Crear en `app/static/styles.css` estilos base responsivos para los formularios de materias y tareas, con controles legibles, foco visible y diseño utilizable en celular y computadora.
+- [X] T015 [US1] Implementar en `app/static/app.js` el envío de los formularios a la API, la carga de materias y tareas iniciales, mensajes de validación en español y creación segura de contenido con APIs DOM que no interpreten texto de usuario como HTML.
 
 **Punto de control**: la historia P1 puede demostrarse sin implementar filtros ni
 etiquetas temporales.
