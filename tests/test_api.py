@@ -57,7 +57,7 @@ def test_create_task_and_list_it_with_subject_details(client):
         "titulo": "Taller",
         "descripcion": "Resolver ejercicios",
         "vencimiento": "2026-10-27T13:00:00-04:00",
-        "zona_horaria": "America/Bogota",
+        "zona_horaria": "America/La_Paz",
     }
 
     created = client.post("/api/tareas", json=task_data)
@@ -169,7 +169,7 @@ def test_task_title_and_description_accept_exact_maximum_lengths(client):
             "titulo": "T" * 150,
             "descripcion": "D" * 2000,
             "vencimiento": "2026-10-27T13:00:00-04:00",
-            "zona_horaria": "America/Bogota",
+            "zona_horaria": "America/La_Paz",
         },
     )
 
@@ -202,7 +202,7 @@ def test_task_validation_trims_fields_and_allows_optional_description(client):
             "titulo": "  Ensayo  ",
             "descripcion": "  Revisar fuentes  ",
             "vencimiento": "2026-10-27T13:00:00-04:00",
-            "zona_horaria": "America/Bogota",
+            "zona_horaria": "America/La_Paz",
         },
     )
     no_description = client.post(

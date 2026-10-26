@@ -102,7 +102,7 @@ Crea una tarea pendiente asociada a una materia existente.
   "titulo": "Taller",
   "descripcion": "Resolver los ejercicios indicados",
   "vencimiento": "2026-10-27T13:00:00-04:00",
-  "zona_horaria": "America/Bogota"
+  "zona_horaria": "America/La_Paz"
 }
 ```
 

@@ -1,10 +1,11 @@
 """Modelos y validación de los datos recibidos y devueltos por la API."""
 
-from datetime import UTC, date, datetime, time, timedelta
-import re
+from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from app import deadlines
 
 
 class SubjectCreate(BaseModel):
@@ -43,28 +44,6 @@ class TaskCreate(BaseModel):
             return normalized or None
         return value
 
-    @field_validator("vencimiento")
-    @classmethod
-    def validate_deadline_format(cls, value: str) -> str:
-        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
-            try:
-                date.fromisoformat(value)
-            except ValueError as error:
-                raise ValueError("La fecha de entrega no es válida.") from error
-            return value
-
-        try:
-            parsed = datetime.fromisoformat(value)
-        except ValueError as error:
-            raise ValueError(
-                "La fecha de entrega debe usar un formato ISO válido."
-            ) from error
-        if parsed.tzinfo is None or parsed.utcoffset() is None:
-            raise ValueError(
-                "La fecha y hora de entrega debe incluir su desplazamiento UTC."
-            )
-        return value
-
     @field_validator("zona_horaria")
     @classmethod
     def validate_timezone(cls, value: str) -> str:
@@ -73,6 +52,13 @@ class TaskCreate(BaseModel):
         except (ValueError, ZoneInfoNotFoundError) as error:
             raise ValueError("La zona horaria IANA no es válida.") from error
         return value
+
+    @model_validator(mode="after")
+    def validate_deadline(self) -> "TaskCreate":
+        # Se valida junto con la zona: una hora puede no existir o no coincidir
+        # con el desplazamiento de esa zona.
+        deadlines.parse_deadline(self.vencimiento, self.zona_horaria)
+        return self
 
 
 class TaskResponse(BaseModel):
@@ -86,41 +72,23 @@ class TaskResponse(BaseModel):
     descripcion: str | None
     vencimiento: str
     estado: str
+    vencida: bool
+    urgente: bool
 
 
-def normalize_deadline(
-    deadline: str,
-    timezone_name: str,
-) -> tuple[str, str, str | None]:
-    """Convierte el vencimiento a UTC y conserva el formato local ingresado."""
-    zone = ZoneInfo(timezone_name)
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", deadline):
-        local_date = date.fromisoformat(deadline)
-        exclusive_end = datetime.combine(
-            local_date + timedelta(days=1),
-            time.min,
-            tzinfo=zone,
-        )
-        utc_deadline = exclusive_end.astimezone(UTC)
-        return (
-            utc_deadline.isoformat(timespec="microseconds"),
-            "fecha",
-            local_date.isoformat(),
-        )
+def present_task(row: dict[str, object], now: datetime) -> TaskResponse:
+    """Transforma una fila SQLite en la forma pública de una tarea.
 
-    local_deadline = datetime.fromisoformat(deadline)
-    utc_deadline = local_deadline.astimezone(UTC)
-    return utc_deadline.isoformat(timespec="microseconds"), "fecha_hora", None
-
-
-def present_task(row: dict[str, object]) -> TaskResponse:
-    """Transforma una fila SQLite en la forma pública de una tarea."""
+    `now` es el instante UTC único de la respuesta, para que todas las tareas
+    de un mismo listado se clasifiquen contra el mismo momento.
+    """
+    utc_deadline = datetime.fromisoformat(str(row["vencimiento_utc"]))
     if row["tipo_vencimiento"] == "fecha":
         deadline = str(row["fecha_local"])
     else:
-        utc_deadline = datetime.fromisoformat(str(row["vencimiento_utc"]))
         local_deadline = utc_deadline.astimezone(ZoneInfo(str(row["zona_horaria"])))
         deadline = local_deadline.isoformat(timespec="seconds")
+    vencida, urgente = deadlines.classify(utc_deadline, str(row["estado"]), now)
 
     return TaskResponse(
         id=int(row["id"]),
@@ -135,4 +103,6 @@ def present_task(row: dict[str, object]) -> TaskResponse:
         ),
         vencimiento=deadline,
         estado=str(row["estado"]),
+        vencida=vencida,
+        urgente=urgente,
     )

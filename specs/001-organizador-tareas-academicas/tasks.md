@@ -86,10 +86,10 @@ de 48 horas; comprobar las etiquetas y el orden estable.
 
 ### Implementación de la historia 2
 
-- [ ] T019 [US2] Crear en `app/deadlines.py` funciones para normalizar fechas-horas a UTC, convertir fechas sin hora al inicio exclusivo del día local siguiente y calcular vencida si `vencimiento <= ahora` y urgente si `ahora < vencimiento <= ahora + 48 horas`.
-- [ ] T020 [US2] Actualizar en `app/db.py` la consulta de tareas para ordenarlas por vencimiento UTC ascendente y luego por identificador ascendente, conservando la precisión fija y la zona horaria para presentación local.
-- [ ] T021 [US2] Actualizar en `app/schemas.py` la validación de fechas ISO de fecha o fecha-hora con desplazamiento, zona horaria IANA y rechazo de horas locales inexistentes o inconsistentes.
-- [ ] T022 [US2] Actualizar en `app/main.py` la respuesta del listado para calcular `vencida` y `urgente` a partir de un solo instante UTC por respuesta; mantener ambas falsas para tareas completadas.
+- [X] T019 [US2] Crear en `app/deadlines.py` funciones para normalizar fechas-horas a UTC, convertir fechas sin hora al inicio exclusivo del día local siguiente y calcular vencida si `vencimiento <= ahora` y urgente si `ahora < vencimiento <= ahora + 48 horas`.
+- [X] T020 [US2] Actualizar en `app/db.py` la consulta de tareas para ordenarlas por vencimiento UTC ascendente y luego por identificador ascendente, conservando la precisión fija y la zona horaria para presentación local.
+- [X] T021 [US2] Actualizar en `app/schemas.py` la validación de fechas ISO de fecha o fecha-hora con desplazamiento, zona horaria IANA y rechazo de horas locales inexistentes o inconsistentes.
+- [X] T022 [US2] Actualizar en `app/main.py` la respuesta del listado para calcular `vencida` y `urgente` a partir de un solo instante UTC por respuesta; mantener ambas falsas para tareas completadas.
 - [ ] T023 [P] [US2] Actualizar en `app/static/app.js` la presentación del vencimiento en hora local y las etiquetas textuales «Vencida» y «Urgente», sin comunicar prioridad únicamente por color.
 - [ ] T024 [P] [US2] Actualizar en `app/static/styles.css` los estilos distinguibles de vencida y urgente, manteniendo señales textuales, contraste, foco visible y adaptación a celular y computadora.
 

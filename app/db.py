@@ -179,10 +179,14 @@ def _task_query() -> str:
 
 
 def list_tasks(db_path: str | Path) -> list[dict[str, object]]:
-    """Lista tareas con nombre y color de materia para mostrarlas."""
+    """Lista tareas por vencimiento más próximo y, si empatan, por identificador.
+
+    `vencimiento_utc` se guarda siempre en UTC con microsegundos fijos, así que
+    ordenar el texto equivale a ordenar los instantes.
+    """
     with get_connection(db_path) as connection:
         rows = connection.execute(
-            f"{_task_query()} ORDER BY tareas.id"
+            f"{_task_query()} ORDER BY tareas.vencimiento_utc ASC, tareas.id ASC"
         ).fetchall()
         return [dict(row) for row in rows]
 
