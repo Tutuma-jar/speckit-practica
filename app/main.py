@@ -1,6 +1,8 @@
 """Creación de la aplicación FastAPI y entrega de recursos estáticos."""
 
+from collections.abc import Callable
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -8,7 +10,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import db, schemas
+from app import db, deadlines, schemas
 
 STATIC_DIR = Path(__file__).parent / "static"
 FIELD_NAMES = {
@@ -47,6 +49,11 @@ def _validation_message(error: RequestValidationError) -> str:
         )
     if error_type in {"string_too_short", "too_short"}:
         return f"El campo «{field_name}» no puede quedar vacío."
+    if error_type == "value_error" and field not in FIELD_NAMES:
+        # Error entre campos (fecha con su zona): su ubicación es solo ("body",)
+        # y el mensaje en español viene en el propio ValueError.
+        cause = first_error.get("ctx", {}).get("error")
+        return str(cause) if cause else "La fecha de entrega no es válida."
     if field == "color":
         return "El color debe tener el formato hexadecimal #RRGGBB."
     if field == "vencimiento":
@@ -56,9 +63,17 @@ def _validation_message(error: RequestValidationError) -> str:
     return f"El campo «{field_name}» no es válido."
 
 
-def create_app(db_path: str | Path | None = None) -> FastAPI:
-    """Crea la aplicación y permite aislar su base de datos en pruebas."""
+def create_app(
+    db_path: str | Path | None = None,
+    clock: Callable[[], datetime] | None = None,
+) -> FastAPI:
+    """Crea la aplicación y permite aislar su base de datos y su reloj en pruebas."""
     resolved_db_path = db.get_database_path(db_path)
+
+    def now_utc() -> datetime:
+        # Se busca deadlines.utc_now al llamar, para que las pruebas puedan
+        # reemplazarlo con monkeypatch además de pasar `clock`.
+        return (clock or deadlines.utc_now)()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -138,8 +153,10 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
         response_model=list[schemas.TaskResponse],
     )
     async def get_tasks() -> list[schemas.TaskResponse]:
+        # Un solo instante por respuesta: todas las tareas se clasifican igual.
+        now = now_utc()
         return [
-            schemas.present_task(task)
+            schemas.present_task(task, now)
             for task in db.list_tasks(resolved_db_path)
         ]
 
@@ -154,7 +171,7 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
                 status_code=404,
                 detail="La materia indicada no existe.",
             )
-        deadline_utc, deadline_type, local_date = schemas.normalize_deadline(
+        deadline_utc, deadline_type, local_date = deadlines.parse_deadline(
             task.vencimiento,
             task.zona_horaria,
         )
@@ -163,15 +180,15 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             materia_id=task.materia_id,
             titulo=task.titulo,
             descripcion=task.descripcion,
-            vencimiento_utc=deadline_utc,
+            vencimiento_utc=deadlines.to_storage(deadline_utc),
             zona_horaria=task.zona_horaria,
             tipo_vencimiento=deadline_type,
-            fecha_local=local_date,
+            fecha_local=local_date.isoformat() if local_date else None,
         )
         saved_task = db.get_task(resolved_db_path, task_id)
         if saved_task is None:
             raise RuntimeError("La tarea creada no apareció en la base de datos.")
-        return schemas.present_task(saved_task)
+        return schemas.present_task(saved_task, now_utc())
 
     return application
 
