@@ -318,3 +318,132 @@ def test_application_keeps_subject_and_task_after_restart(client, database_path)
     with TestClient(create_app(database_path)) as restarted_client:
         assert restarted_client.get("/api/materias").json() == [subject]
         assert restarted_client.get("/api/tareas").json() == [task]
+
+
+def test_task_list_sorts_by_deadline_then_id_stably(client):
+    subject = client.post(
+        "/api/materias",
+        json={"nombre": "CÃ¡lculo", "color": "#3366CC"},
+    ).json()
+    later = client.post(
+        "/api/tareas",
+        json={
+            "materia_id": subject["id"],
+            "titulo": "Posterior",
+            "vencimiento": "2026-10-28T10:00:00+00:00",
+            "zona_horaria": "Etc/UTC",
+        },
+    )
+    first_tie = client.post(
+        "/api/tareas",
+        json={
+            "materia_id": subject["id"],
+            "titulo": "Empate A",
+            "vencimiento": "2026-10-27T10:00:00+00:00",
+            "zona_horaria": "Etc/UTC",
+        },
+    )
+    second_tie = client.post(
+        "/api/tareas",
+        json={
+            "materia_id": subject["id"],
+            "titulo": "Empate B",
+            "vencimiento": "2026-10-27T10:00:00+00:00",
+            "zona_horaria": "Etc/UTC",
+        },
+    )
+
+    assert all(
+        response.status_code == 201
+        for response in (later, first_tie, second_tie)
+    )
+    expected_ids = [
+        first_tie.json()["id"],
+        second_tie.json()["id"],
+        later.json()["id"],
+    ]
+    first_result = [task["id"] for task in client.get("/api/tareas").json()]
+    second_result = [task["id"] for task in client.get("/api/tareas").json()]
+
+    assert first_result == expected_ids
+    assert second_result == expected_ids
+
+
+def test_task_accepts_explicit_utc_offset(client):
+    subject = client.post(
+        "/api/materias",
+        json={"nombre": "FÃ­sica", "color": "#3366CC"},
+    ).json()
+
+    response = client.post(
+        "/api/tareas",
+        json={
+            "materia_id": subject["id"],
+            "titulo": "PrÃ¡ctica",
+            "vencimiento": "2026-10-27T13:00:00+00:00",
+            "zona_horaria": "Etc/UTC",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["vencimiento"] == "2026-10-27T13:00:00+00:00"
+
+
+def test_task_accepts_iana_timezone_and_matching_offset(client):
+    subject = client.post(
+        "/api/materias",
+        json={"nombre": "GeografÃ­a", "color": "#3366CC"},
+    ).json()
+
+    response = client.post(
+        "/api/tareas",
+        json={
+            "materia_id": subject["id"],
+            "titulo": "Mapa",
+            "vencimiento": "2026-10-27T08:30:00+09:00",
+            "zona_horaria": "Asia/Tokyo",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["vencimiento"] == "2026-10-27T08:30:00+09:00"
+
+
+def test_task_rejects_nonexistent_local_time_in_iana_timezone(client):
+    subject = client.post(
+        "/api/materias",
+        json={"nombre": "Historia", "color": "#3366CC"},
+    ).json()
+
+    response = client.post(
+        "/api/tareas",
+        json={
+            "materia_id": subject["id"],
+            "titulo": "Lectura",
+            # New York skips from 01:59:59 to 03:00:00 on this date.
+            "vencimiento": "2026-03-08T02:30:00-05:00",
+            "zona_horaria": "America/New_York",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_task_rejects_offset_inconsistent_with_iana_timezone(client):
+    subject = client.post(
+        "/api/materias",
+        json={"nombre": "Literatura", "color": "#3366CC"},
+    ).json()
+
+    response = client.post(
+        "/api/tareas",
+        json={
+            "materia_id": subject["id"],
+            "titulo": "Ensayo",
+            # New York is UTC-05:00 in January, not UTC-04:00.
+            "vencimiento": "2026-01-15T12:00:00-04:00",
+            "zona_horaria": "America/New_York",
+        },
+    )
+
+    assert response.status_code == 422
